@@ -1,0 +1,16 @@
+""""Welcome to the Keylogger Tool""""
+---------------------------------------------------------------------------------------------------------------------------------------------
+This tool works on various environments such as Windows, Linux and MacOS
+
+There are 2 tools included in this tool
+1) keylogger.py
+2) log.py.py
+---------------------------------------------------------------------------------------------------------------------------------------------
+log.py
+---------------------------------------------------------------------------------------------------------------------------------------------
+The main function of this tool is to send the report to the mail specified in the program every 2 seconds regarding all the keystrokes made by the victim user.
+
+After installing the tool, the user has to just run the log.py and the user can also modify the email credentials accordingly.
+And to stop the program running, the user has to type "killall python" command which kills all the python programs running.
+
+Ex: python log.py
